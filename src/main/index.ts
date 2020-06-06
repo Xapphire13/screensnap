@@ -4,8 +4,9 @@ import { app, BrowserWindow } from 'electron';
 function createWindow() {
   const toolbarWindow = new BrowserWindow({
     width: 500,
-    height: 50,
+    height: 56,
     frame: false,
+    resizable: false,
   });
 
   toolbarWindow.loadFile('toolbar.html');
