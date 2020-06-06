@@ -6,7 +6,7 @@ type IconSize = 'normal' | 'large';
 
 export type ToolbarButtonProps = {
   icon: React.ReactType<FeatherProps>;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   size?: IconSize;
 };
 

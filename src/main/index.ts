@@ -5,7 +5,11 @@ import {
   screen,
   ipcMain,
   systemPreferences,
+  Menu,
+  MenuItem,
+  DesktopCapturerSource,
 } from 'electron';
+import IpcChannel from '../IpcChannel';
 
 const overlays = new Map<number, BrowserWindow>();
 
@@ -73,7 +77,7 @@ function createOverlayWindow() {
   overlays.set(cursorScreen.id, overlayWindow);
 }
 
-ipcMain.on('show-overlay', () => {
+ipcMain.on(IpcChannel.ShowOverlay, () => {
   createOverlayWindow();
 });
 

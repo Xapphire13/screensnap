@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { styled } from 'linaria/react';
-import { desktopCapturer } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 
 const Container = styled.div`
@@ -11,12 +10,6 @@ const Container = styled.div`
 `;
 
 export default function Overlay() {
-  useEffect(() => {
-    desktopCapturer
-      .getSources({ types: ['window'] })
-      .then((sources) => console.log(sources));
-  });
-
   return <Container />;
 }
 
