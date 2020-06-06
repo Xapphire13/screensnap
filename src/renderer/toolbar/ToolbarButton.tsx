@@ -1,11 +1,12 @@
 import React from 'react';
 import { styled } from 'linaria/react';
-import { Props as FeatherProps, Icon } from 'react-feather';
+import { Props as FeatherProps } from 'react-feather';
 
 type IconSize = 'normal' | 'large';
 
 export type ToolbarButtonProps = {
   icon: React.ReactType<FeatherProps>;
+  onClick?: () => void;
   size?: IconSize;
 };
 
@@ -29,11 +30,12 @@ const Container = styled.div<{ size: number }>`
 export default function ToolbarButton({
   icon: Icon,
   size = 'normal',
+  onClick,
 }: ToolbarButtonProps) {
   const sizeValue = ICON_SIZES[size];
 
   return (
-    <Container size={sizeValue}>
+    <Container size={sizeValue} onClick={onClick}>
       <Icon size={sizeValue} />
     </Container>
   );

@@ -1,15 +1,74 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, screen, ipcMain } from 'electron';
 
-function createWindow() {
+const overlays = new Map<number, BrowserWindow>();
+
+function createToolbarWindow() {
+  const { x, y } = screen.getCursorScreenPoint();
+
   const toolbarWindow = new BrowserWindow({
+    x,
+    y,
     width: 500,
     height: 56,
     frame: false,
     resizable: false,
+    show: false,
+    webPreferences: {
+      nodeIntegration: true,
+    },
   });
 
+  toolbarWindow.setAlwaysOnTop(true, 'screen-saver', 2);
   toolbarWindow.loadFile('toolbar.html');
+
+  toolbarWindow.show();
 }
 
-app.on('ready', createWindow);
+function createOverlayWindow() {
+  const cursorScreen = screen.getDisplayNearestPoint(
+    screen.getCursorScreenPoint()
+  );
+
+  if ([...overlays.keys()].includes(cursorScreen.id)) {
+    // Already open
+    return;
+  }
+
+  [...overlays.entries()].forEach(([windowId, window]) => {
+    window.close();
+    overlays.delete(windowId);
+  });
+
+  const { x, y, width, height } = cursorScreen.bounds;
+
+  const overlayWindow = new BrowserWindow({
+    x,
+    y,
+    width,
+    height,
+    hasShadow: false,
+    enableLargerThanScreen: true,
+    resizable: false,
+    movable: false,
+    frame: false,
+    transparent: true,
+    show: false,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
+
+  overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+  overlayWindow.loadFile('overlay.html');
+
+  overlayWindow.showInactive();
+
+  overlays.set(cursorScreen.id, overlayWindow);
+}
+
+ipcMain.on('show-overlay', () => {
+  createOverlayWindow();
+});
+
+app.on('ready', createToolbarWindow);

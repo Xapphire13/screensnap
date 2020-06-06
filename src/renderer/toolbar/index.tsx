@@ -7,6 +7,7 @@ import {
   Crosshair,
   Aperture,
 } from 'react-feather';
+import { ipcRenderer } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 import ToolbarButton from './ToolbarButton';
 
@@ -26,7 +27,12 @@ const Container = styled.div`
 export default function Toolbar() {
   return (
     <Container>
-      <ToolbarButton icon={Crop} />
+      <ToolbarButton
+        icon={Crop}
+        onClick={() => {
+          ipcRenderer.send('show-overlay');
+        }}
+      />
       <ToolbarButton icon={Crosshair} />
       <ToolbarButton icon={Aperture} size="large" />
       <ToolbarButton icon={Maximize} />
