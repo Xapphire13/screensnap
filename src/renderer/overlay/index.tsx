@@ -3,6 +3,7 @@ import { styled } from 'linaria/react';
 import { ipcRenderer } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 import IpcChannel from '../../IpcChannel';
+import ViewFinder from './ViewFinder';
 
 const Container = styled.div`
   position: relative;
@@ -22,20 +23,6 @@ const OverlayMask = styled.div<{
   bottom: ${({ bottom }) => bottom}px;
   left: ${({ left }) => left}px;
   right: ${({ right }) => right}px;
-`;
-
-const ViewFinder = styled.div<{
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}>`
-  position: absolute;
-  cursor: move;
-  top: ${({ top }) => top}px;
-  left: ${({ left }) => left}px;
-  width: ${({ width }) => width}px;
-  height: ${({ height }) => height}px;
 `;
 
 export default function Overlay() {
@@ -110,7 +97,7 @@ export default function Overlay() {
       />
       <OverlayMask top={top} bottom={height - bottom} left={right} right={0} />
       <ViewFinder
-        ref={viewFinderRef}
+        viewFinderRef={viewFinderRef}
         top={top}
         left={left}
         width={right - left}
