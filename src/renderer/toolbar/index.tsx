@@ -79,7 +79,14 @@ export default function Toolbar() {
       <ToolbarButton
         icon={Crop}
         onClick={() => {
-          ipcRenderer.send(IpcChannel.ShowOverlay);
+          ipcRenderer.send(IpcChannel.ShowOverlay, {
+            bounds: {
+              top: 0,
+              bottom: 100,
+              left: 0,
+              right: 100,
+            },
+          });
         }}
       />
       <ToolbarButton
@@ -87,7 +94,14 @@ export default function Toolbar() {
         onClick={(event) => showCaptureSources(event.currentTarget)}
       />
       <ToolbarButton icon={Aperture} size="large" />
-      <ToolbarButton icon={Maximize} />
+      <ToolbarButton
+        icon={Maximize}
+        onClick={() => {
+          ipcRenderer.send(IpcChannel.ShowOverlay, {
+            fullscreen: true,
+          });
+        }}
+      />
       <ToolbarButton
         icon={MoreHorizontal}
         onClick={(event) => showApplicationMenu(event.currentTarget)}

@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { styled } from 'linaria/react';
+import { ipcRenderer } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
+import IpcChannel from '../../IpcChannel';
 
 const Container = styled.div`
   position: relative;
@@ -56,6 +58,18 @@ export default function Overlay() {
         height: boundingRect.height,
       });
     }
+  }, []);
+
+  useEffect(() => {
+    const handler = (_, newBounds) => {
+      setViewFinderBounds(newBounds);
+    };
+
+    ipcRenderer.on(IpcChannel.SetViewFinderSize, handler);
+
+    return () => {
+      ipcRenderer.removeListener(IpcChannel.SetViewFinderSize, handler);
+    };
   }, []);
 
   return (

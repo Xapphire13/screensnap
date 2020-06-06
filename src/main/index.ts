@@ -9,7 +9,7 @@ import {
   MenuItem,
   DesktopCapturerSource,
 } from 'electron';
-import IpcChannel from '../IpcChannel';
+import IpcChannel, { ShowOverlayOptions } from '../IpcChannel';
 
 const overlays = new Map<number, BrowserWindow>();
 
@@ -42,7 +42,7 @@ function createOverlayWindow() {
 
   if ([...overlays.keys()].includes(cursorScreen.id)) {
     // Already open
-    return;
+    return overlays.get(cursorScreen.id)!;
   }
 
   [...overlays.entries()].forEach(([windowId, window]) => {
@@ -75,10 +75,25 @@ function createOverlayWindow() {
   overlayWindow.showInactive();
 
   overlays.set(cursorScreen.id, overlayWindow);
+
+  return overlayWindow;
 }
 
-ipcMain.on(IpcChannel.ShowOverlay, () => {
-  createOverlayWindow();
+ipcMain.on(IpcChannel.ShowOverlay, (_, options: ShowOverlayOptions) => {
+  const overlay = createOverlayWindow();
+
+  const newBounds = options.fullscreen
+    ? {
+        top: 0,
+        bottom: overlay.getBounds().height,
+        left: 0,
+        right: overlay.getBounds().width,
+      }
+    : options.bounds;
+
+  setTimeout(() => {
+    overlay.webContents.send(IpcChannel.SetViewFinderSize, newBounds);
+  }, 500);
 });
 
 async function checkScreenRecordingPermissions() {
