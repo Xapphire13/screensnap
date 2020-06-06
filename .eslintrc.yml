@@ -12,6 +12,7 @@ globals:
 parser: "@typescript-eslint/parser"
 ignorePatterns:
   - "**/*.d.ts"
+  - "webpack.config.js"
 parserOptions:
   ecmaFeatures:
     jsx: true
@@ -43,6 +44,6 @@ rules:
         - "**/*.config.js"
   react/jsx-one-expression-per-line: off
   react/jsx-curly-newline: off
-  no-plusplus: off
+  no-plusplus: 0
   "@typescript-eslint/indent": off
-  no-underscore-dangle: off
+  no-underscore-dangle: 0

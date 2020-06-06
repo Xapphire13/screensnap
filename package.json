@@ -4,6 +4,7 @@
   "description": "A screenshot tool",
   "private": true,
   "scripts": {
+    "clean": "rm -rf ./dist",
     "build": "webpack",
     "start": "electron ./dist/main.js",
     "lint": "eslint --ext .ts,.tsx ./src",

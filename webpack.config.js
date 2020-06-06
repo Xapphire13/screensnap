@@ -24,14 +24,16 @@ const baseConfig = {
 const clientConfig = {
   ...baseConfig,
 
-  entry: './src/renderer/index.tsx',
+  entry: {
+    "toolbar": "./src/renderer/toolbar/index.tsx"
+  },
   target: 'electron-renderer',
   output: {
-    filename: 'renderer.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: './'
   },
-  plugins: [...baseConfig.plugins, new HtmlWebpackPlugin()]
+  plugins: [...baseConfig.plugins, new HtmlWebpackPlugin({ chunks: "toolbar", filename: "toolbar.html" })]
 };
 
 const serverConfig = {

@@ -2,12 +2,13 @@
 import { app, BrowserWindow } from 'electron';
 
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+  const toolbarWindow = new BrowserWindow({
+    width: 500,
+    height: 50,
+    frame: false,
   });
 
-  win.loadFile('index.html');
+  toolbarWindow.loadFile('toolbar.html');
 }
 
 app.on('ready', createWindow);
