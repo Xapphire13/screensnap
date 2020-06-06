@@ -1,5 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { app, BrowserWindow, screen, ipcMain } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  screen,
+  ipcMain,
+  systemPreferences,
+} from 'electron';
 
 const overlays = new Map<number, BrowserWindow>();
 
@@ -71,4 +77,21 @@ ipcMain.on('show-overlay', () => {
   createOverlayWindow();
 });
 
-app.on('ready', createToolbarWindow);
+async function checkScreenRecordingPermissions() {
+  const access = systemPreferences.getMediaAccessStatus('screen');
+
+  if (access !== 'granted') {
+    // @ts-expect-error
+    await systemPreferences.askForMediaAccess('screen');
+
+    app.exit();
+  }
+}
+
+async function main() {
+  await checkScreenRecordingPermissions();
+
+  app.on('ready', createToolbarWindow);
+}
+
+main();
