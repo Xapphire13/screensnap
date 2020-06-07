@@ -110,13 +110,44 @@ export default function Overlay() {
           return;
         }
 
-        setViewFinderBounds((prev) => ({
-          ...prev,
-          left: prev.left + movementX,
-          right: prev.right + movementX,
-          top: prev.top + movementY,
-          bottom: prev.bottom + movementY,
-        }));
+        setViewFinderBounds((prev) => {
+          const updated = {
+            left: prev.left + movementX,
+            right: prev.right + movementX,
+            top: prev.top + movementY,
+            bottom: prev.bottom + movementY,
+          };
+
+          if (updated.left < 0) {
+            const delta = -updated.left;
+
+            updated.left += delta;
+            updated.right += delta;
+          }
+
+          if (updated.right > width) {
+            const delta = right - width;
+
+            updated.left -= delta;
+            updated.right -= delta;
+          }
+
+          if (updated.top < 0) {
+            const delta = -updated.top;
+
+            updated.top += delta;
+            updated.bottom += delta;
+          }
+
+          if (updated.bottom > height) {
+            const delta = updated.bottom - height;
+
+            updated.top -= delta;
+            updated.bottom -= delta;
+          }
+
+          return updated;
+        });
       }}
     >
       <OverlayMask top={0} bottom={height - top} left={0} right={0} />
