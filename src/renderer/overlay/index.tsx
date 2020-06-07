@@ -1,10 +1,12 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { styled } from 'linaria/react';
-import { ipcRenderer } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
-import IpcChannel from '../../IpcChannel';
 import ViewFinder from './ViewFinder';
 import { BoundingRectangle } from '../../BoundingRectangle';
+import {
+  sendOverlayReady,
+  onSetViewFinderSize,
+} from '../utils/IpcRendererUtils';
 
 const Container = styled.div`
   position: relative;
@@ -99,19 +101,15 @@ export default function Overlay() {
   }, []);
 
   useEffect(() => {
-    const handler = (_, newBounds) => {
+    const cleanup = onSetViewFinderSize((newBounds) => {
       setViewFinderBounds(newBounds);
-    };
+    });
 
-    ipcRenderer.on(IpcChannel.SetViewFinderSize, handler);
-
-    return () => {
-      ipcRenderer.removeListener(IpcChannel.SetViewFinderSize, handler);
-    };
+    return cleanup;
   }, []);
 
   useEffect(() => {
-    ipcRenderer.send(IpcChannel.OverlayReady);
+    sendOverlayReady();
   });
 
   const { bottom, left, right, top } = viewFinderBounds;

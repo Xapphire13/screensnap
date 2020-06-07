@@ -7,15 +7,10 @@ import {
   Crosshair,
   Aperture,
 } from 'react-feather';
-import {
-  ipcRenderer,
-  desktopCapturer,
-  remote,
-  MenuItem as MenuItemType,
-} from 'electron';
+import { desktopCapturer, remote, MenuItem as MenuItemType } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 import ToolbarButton from './ToolbarButton';
-import IpcChannel from '../../IpcChannel';
+import { sendShowOverlay } from '../utils/IpcRendererUtils';
 
 const { Menu, MenuItem, shell } = remote;
 
@@ -51,9 +46,7 @@ async function showCaptureSources(element: HTMLDivElement) {
         new MenuItem({
           label: source.name,
           icon: source.appIcon.resize({ height: 16 }),
-          click: () => {
-            ipcRenderer.send(IpcChannel.ShowOverlay, {});
-          },
+          click: () => sendShowOverlay(),
         })
     ),
     element
@@ -79,12 +72,7 @@ function showApplicationMenu(element: HTMLDivElement) {
 export default function Toolbar() {
   return (
     <Container>
-      <ToolbarButton
-        icon={Crop}
-        onClick={() => {
-          ipcRenderer.send(IpcChannel.ShowOverlay, {});
-        }}
-      />
+      <ToolbarButton icon={Crop} onClick={() => sendShowOverlay()} />
       <ToolbarButton
         icon={Crosshair}
         onClick={(event) => showCaptureSources(event.currentTarget)}
@@ -93,9 +81,7 @@ export default function Toolbar() {
       <ToolbarButton
         icon={Maximize}
         onClick={() => {
-          ipcRenderer.send(IpcChannel.ShowOverlay, {
-            fullscreen: true,
-          });
+          sendShowOverlay({ fullscreen: true });
         }}
       />
       <ToolbarButton
