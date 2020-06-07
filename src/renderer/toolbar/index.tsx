@@ -51,6 +51,9 @@ async function showCaptureSources(element: HTMLDivElement) {
         new MenuItem({
           label: source.name,
           icon: source.appIcon.resize({ height: 16 }),
+          click: () => {
+            ipcRenderer.send(IpcChannel.ShowOverlay, {});
+          },
         })
     ),
     element
