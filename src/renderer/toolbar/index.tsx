@@ -41,14 +41,18 @@ async function showCaptureSources(element: HTMLDivElement) {
   });
 
   showPopupMenu(
-    sources.map(
-      (source) =>
-        new MenuItem({
-          label: source.name,
-          icon: source.appIcon.resize({ height: 16 }),
-          click: () => sendShowOverlay(),
-        })
-    ),
+    [
+      new MenuItem({ label: 'Coming soon', enabled: false }),
+      ...sources.map(
+        (source) =>
+          new MenuItem({
+            label: source.name,
+            icon: source.appIcon.resize({ height: 16 }),
+            click: () => sendShowOverlay(),
+            enabled: false,
+          })
+      ),
+    ],
     element
   );
 }
