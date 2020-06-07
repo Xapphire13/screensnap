@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { styled } from 'linaria/react';
 import { ipcRenderer } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 import IpcChannel from '../../IpcChannel';
 import ViewFinder from './ViewFinder';
+import { BoundingRectangle } from '../../BoundingRectangle';
 
 const Container = styled.div`
   position: relative;
@@ -30,12 +31,41 @@ export default function Overlay() {
   const viewFinderRef = useRef<HTMLDivElement>(null);
   const [mouseDownInViewFinder, setMouseDownInViewFinder] = useState(false);
   const [{ height, width }, setOverlaySize] = useState({ width: 0, height: 0 });
-  const [{ bottom, left, right, top }, setViewFinderBounds] = useState({
+  const [viewFinderBounds, setViewFinderBounds] = useState({
     top: 100,
     bottom: 200,
     left: 100,
     right: 200,
   });
+  const handleViewFinderResize = useCallback(
+    (deltas: Partial<BoundingRectangle>) => {
+      setViewFinderBounds((prev) => {
+        const updated = {
+          bottom: prev.bottom + (deltas.bottom ?? 0),
+          left: prev.left + (deltas.left ?? 0),
+          right: prev.right + (deltas.right ?? 0),
+          top: prev.top + (deltas.top ?? 0),
+        };
+
+        if (updated.left > updated.right) {
+          const clampedValue = deltas.left ? prev.right : prev.left;
+
+          updated.left = clampedValue;
+          updated.right = clampedValue;
+        }
+
+        if (updated.top > updated.bottom) {
+          const clampedValue = deltas.top ? prev.bottom : prev.top;
+
+          updated.top = clampedValue;
+          updated.bottom = clampedValue;
+        }
+
+        return updated;
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     if (containerRef.current) {
@@ -58,6 +88,8 @@ export default function Overlay() {
       ipcRenderer.removeListener(IpcChannel.SetViewFinderSize, handler);
     };
   }, []);
+
+  const { bottom, left, right, top } = viewFinderBounds;
 
   return (
     <Container
@@ -98,6 +130,7 @@ export default function Overlay() {
       <OverlayMask top={top} bottom={height - bottom} left={right} right={0} />
       <ViewFinder
         viewFinderRef={viewFinderRef}
+        onResize={handleViewFinderResize}
         top={top}
         left={left}
         width={right - left}
