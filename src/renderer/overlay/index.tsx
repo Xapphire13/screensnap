@@ -28,8 +28,6 @@ const OverlayMask = styled.div<{
 
 export default function Overlay() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewFinderRef = useRef<HTMLDivElement>(null);
-  const [mouseDownInViewFinder, setMouseDownInViewFinder] = useState(false);
   const [{ height, width }, setOverlaySize] = useState({ width: 0, height: 0 });
   const [viewFinderBounds, setViewFinderBounds] = useState({
     top: 0,
@@ -61,10 +59,33 @@ export default function Overlay() {
           updated.bottom = clampedValue;
         }
 
+        const viewFinderWidth = updated.right - updated.left;
+        const viewFinderHeight = updated.bottom - updated.top;
+
+        if (updated.left < 0) {
+          updated.left = 0;
+          updated.right = updated.left + viewFinderWidth;
+        }
+
+        if (updated.right > width) {
+          updated.right = width;
+          updated.left = updated.right - viewFinderWidth;
+        }
+
+        if (updated.top < 0) {
+          updated.top = 0;
+          updated.bottom = updated.top + viewFinderHeight;
+        }
+
+        if (updated.bottom > height) {
+          updated.bottom = height;
+          updated.top = updated.bottom - viewFinderHeight;
+        }
+
         return updated;
       });
     },
-    []
+    [height, width]
   );
 
   useEffect(() => {
@@ -96,64 +117,7 @@ export default function Overlay() {
   const { bottom, left, right, top } = viewFinderBounds;
 
   return (
-    <Container
-      ref={containerRef}
-      onMouseDown={({ clientX, clientY }) => {
-        if (
-          clientX >= left &&
-          clientX <= right &&
-          clientY >= top &&
-          clientY <= bottom
-        ) {
-          setMouseDownInViewFinder(true);
-        }
-      }}
-      onMouseUp={() => setMouseDownInViewFinder(false)}
-      onMouseMove={({ movementX, movementY }) => {
-        if (!mouseDownInViewFinder) {
-          return;
-        }
-
-        setViewFinderBounds((prev) => {
-          const updated = {
-            left: prev.left + movementX,
-            right: prev.right + movementX,
-            top: prev.top + movementY,
-            bottom: prev.bottom + movementY,
-          };
-
-          if (updated.left < 0) {
-            const delta = -updated.left;
-
-            updated.left += delta;
-            updated.right += delta;
-          }
-
-          if (updated.right > width) {
-            const delta = right - width;
-
-            updated.left -= delta;
-            updated.right -= delta;
-          }
-
-          if (updated.top < 0) {
-            const delta = -updated.top;
-
-            updated.top += delta;
-            updated.bottom += delta;
-          }
-
-          if (updated.bottom > height) {
-            const delta = updated.bottom - height;
-
-            updated.top -= delta;
-            updated.bottom -= delta;
-          }
-
-          return updated;
-        });
-      }}
-    >
+    <Container ref={containerRef}>
       <OverlayMask top={0} bottom={height - top} left={0} right={0} />
       <OverlayMask top={bottom} bottom={0} left={0} right={0} />
       <OverlayMask
@@ -164,7 +128,6 @@ export default function Overlay() {
       />
       <OverlayMask top={top} bottom={height - bottom} left={right} right={0} />
       <ViewFinder
-        viewFinderRef={viewFinderRef}
         onResize={handleViewFinderResize}
         top={top}
         left={left}

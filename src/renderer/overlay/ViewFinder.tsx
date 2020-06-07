@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo } from 'react';
+import React from 'react';
 import { styled } from 'linaria/react';
 import { BoundingRectangle } from '../../BoundingRectangle';
+import useOnDrag from '../hooks/useOnDrag';
 
 const BORDER_THICKNESS = 1;
 
@@ -84,7 +85,6 @@ const ResizeHandle = styled.div<{
 `;
 
 export type ViewFinderProps = {
-  viewFinderRef: React.Ref<HTMLDivElement>;
   top: number;
   left: number;
   width: number;
@@ -92,132 +92,54 @@ export type ViewFinderProps = {
   onResize: (deltas: Partial<BoundingRectangle>) => void;
 };
 
-function handleResizeHandleMove(
-  handler: (this: HTMLElement, ev: MouseEvent) => void
-) {
-  const mouseUpListener: (this: HTMLElement, ev: MouseEvent) => void = () => {
-    document.body.removeEventListener('mousemove', handler);
-    document.body.removeEventListener('mouseup', mouseUpListener);
-  };
-
-  document.body.addEventListener('mousemove', handler);
-  document.body.addEventListener('mouseup', mouseUpListener);
-}
-
-export default function ViewFinder({
-  viewFinderRef,
-  onResize,
-  ...rest
-}: ViewFinderProps) {
-  const topLeftHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementX, movementY }) =>
-        onResize({ left: movementX, top: movementY })
-      );
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const topCenterHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementY }) => onResize({ top: movementY }));
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const topRightHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementX, movementY }) =>
-        onResize({ right: movementX, top: movementY })
-      );
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const leftHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementX }) => onResize({ left: movementX }));
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const rightHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementX }) => onResize({ right: movementX }));
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const bottomLeftHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementX, movementY }) =>
-        onResize({ left: movementX, bottom: movementY })
-      );
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const bottomCenterHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementY }) =>
-        onResize({ bottom: movementY })
-      );
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
-  const bottomRightHandler = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      handleResizeHandleMove(({ movementX, movementY }) =>
-        onResize({ right: movementX, bottom: movementY })
-      );
-
-      ev.stopPropagation();
-    },
-    [onResize]
-  );
+export default function ViewFinder({ onResize, ...rest }: ViewFinderProps) {
+  const [viewFinder] = useOnDrag(({ movementX, movementY }) => {
+    onResize({
+      bottom: movementY,
+      left: movementX,
+      right: movementX,
+      top: movementY,
+    });
+  });
+  const [topLeftHandle] = useOnDrag(({ movementX, movementY }) => {
+    onResize({ left: movementX, top: movementY });
+  });
+  const [topCenterHandle] = useOnDrag(({ movementY }) => {
+    onResize({ top: movementY });
+  });
+  const [topRightHandle] = useOnDrag(({ movementX, movementY }) => {
+    onResize({ right: movementX, top: movementY });
+  });
+  const [leftHandle] = useOnDrag(({ movementX }) => {
+    onResize({ left: movementX });
+  });
+  const [rightHandle] = useOnDrag(({ movementX }) => {
+    onResize({ right: movementX });
+  });
+  const [bottomLeftHandle] = useOnDrag(({ movementX, movementY }) => {
+    onResize({ left: movementX, bottom: movementY });
+  });
+  const [bottomCenterHandle] = useOnDrag(({ movementY }) => {
+    onResize({ bottom: movementY });
+  });
+  const [bottomRightHandle] = useOnDrag(({ movementX, movementY }) => {
+    onResize({ right: movementX, bottom: movementY });
+  });
 
   return (
-    <Container ref={viewFinderRef} {...rest}>
-      <ResizeHandle hAnchor="left" vAnchor="top" onMouseDown={topLeftHandler} />
+    <Container ref={viewFinder} {...rest}>
+      <ResizeHandle ref={topLeftHandle} vAnchor="top" hAnchor="left" />
+      <ResizeHandle ref={topCenterHandle} vAnchor="top" hAnchor="center" />
+      <ResizeHandle ref={topRightHandle} vAnchor="top" hAnchor="right" />
+      <ResizeHandle ref={leftHandle} vAnchor="center" hAnchor="left" />
+      <ResizeHandle ref={rightHandle} vAnchor="center" hAnchor="right" />
+      <ResizeHandle ref={bottomLeftHandle} vAnchor="bottom" hAnchor="left" />
       <ResizeHandle
+        ref={bottomCenterHandle}
+        vAnchor="bottom"
         hAnchor="center"
-        vAnchor="top"
-        onMouseDown={topCenterHandler}
       />
-      <ResizeHandle
-        hAnchor="right"
-        vAnchor="top"
-        onMouseDown={topRightHandler}
-      />
-      <ResizeHandle hAnchor="left" vAnchor="center" onMouseDown={leftHandler} />
-      <ResizeHandle
-        hAnchor="right"
-        vAnchor="center"
-        onMouseDown={rightHandler}
-      />
-      <ResizeHandle
-        hAnchor="left"
-        vAnchor="bottom"
-        onMouseDown={bottomLeftHandler}
-      />
-      <ResizeHandle
-        hAnchor="center"
-        vAnchor="bottom"
-        onMouseDown={bottomCenterHandler}
-      />
-      <ResizeHandle
-        hAnchor="right"
-        vAnchor="bottom"
-        onMouseDown={bottomRightHandler}
-      />
+      <ResizeHandle ref={bottomRightHandle} vAnchor="bottom" hAnchor="right" />
     </Container>
   );
 }
