@@ -5,9 +5,6 @@ import {
   screen,
   ipcMain,
   systemPreferences,
-  Menu,
-  MenuItem,
-  DesktopCapturerSource,
 } from 'electron';
 import IpcChannel, { ShowOverlayOptions } from '../IpcChannel';
 
@@ -35,14 +32,14 @@ function createToolbarWindow() {
   toolbarWindow.show();
 }
 
-function createOverlayWindow() {
+function createOverlayWindow(): Promise<BrowserWindow> {
   const cursorScreen = screen.getDisplayNearestPoint(
     screen.getCursorScreenPoint()
   );
 
   if ([...overlays.keys()].includes(cursorScreen.id)) {
     // Already open
-    return overlays.get(cursorScreen.id)!;
+    return Promise.resolve(overlays.get(cursorScreen.id)!);
   }
 
   [...overlays.entries()].forEach(([windowId, window]) => {
@@ -76,24 +73,30 @@ function createOverlayWindow() {
 
   overlays.set(cursorScreen.id, overlayWindow);
 
-  return overlayWindow;
+  return new Promise((res) => {
+    ipcMain.once(IpcChannel.OverlayReady, () => res(overlayWindow));
+  });
 }
 
-ipcMain.on(IpcChannel.ShowOverlay, (_, options: ShowOverlayOptions) => {
-  const overlay = createOverlayWindow();
+ipcMain.on(IpcChannel.ShowOverlay, async (_, options: ShowOverlayOptions) => {
+  const overlay = await createOverlayWindow();
+  const { height, width } = overlay.getBounds();
 
   const newBounds = options.fullscreen
     ? {
         top: 0,
-        bottom: overlay.getBounds().height,
+        bottom: height,
         left: 0,
-        right: overlay.getBounds().width,
+        right: width,
       }
-    : options.bounds;
+    : options.bounds ?? {
+        top: height / 2 - 50,
+        bottom: height / 2 + 50,
+        left: width / 2 - 100,
+        right: width / 2 + 100,
+      };
 
-  setTimeout(() => {
-    overlay.webContents.send(IpcChannel.SetViewFinderSize, newBounds);
-  }, 500);
+  overlay.webContents.send(IpcChannel.SetViewFinderSize, newBounds);
 });
 
 async function checkScreenRecordingPermissions() {

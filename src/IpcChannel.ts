@@ -1,6 +1,7 @@
 enum IpcChannel {
   ShowOverlay = 'show-overlay',
   SetViewFinderSize = 'set-view-finder-size',
+  OverlayReady = 'overlay-ready',
 }
 
 export interface ShowOverlayOptions {

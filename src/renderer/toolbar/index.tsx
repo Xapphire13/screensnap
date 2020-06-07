@@ -79,14 +79,7 @@ export default function Toolbar() {
       <ToolbarButton
         icon={Crop}
         onClick={() => {
-          ipcRenderer.send(IpcChannel.ShowOverlay, {
-            bounds: {
-              top: 0,
-              bottom: 100,
-              left: 0,
-              right: 100,
-            },
-          });
+          ipcRenderer.send(IpcChannel.ShowOverlay, {});
         }}
       />
       <ToolbarButton
