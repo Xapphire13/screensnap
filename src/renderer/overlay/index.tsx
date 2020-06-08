@@ -1,12 +1,17 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { styled } from 'linaria/react';
+import { remote } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 import ViewFinder from './ViewFinder';
 import { BoundingRectangle } from '../../BoundingRectangle';
 import {
   sendOverlayReady,
   onSetViewFinderSize,
+  onCaptureScreenshot,
 } from '../utils/IpcRendererUtils';
+import captureScreenshot from '../utils/captureScreenshot';
+
+const { screen } = remote;
 
 const Container = styled.div`
   position: relative;
@@ -37,6 +42,9 @@ export default function Overlay() {
     left: 0,
     right: 0,
   });
+
+  const { bottom, left, right, top } = viewFinderBounds;
+
   const handleViewFinderResize = useCallback(
     (deltas: Partial<BoundingRectangle>) => {
       setViewFinderBounds((prev) => {
@@ -109,10 +117,25 @@ export default function Overlay() {
   }, []);
 
   useEffect(() => {
+    const cleanup = onCaptureScreenshot((displayId) => {
+      const display = screen.getAllDisplays().find((it) => it.id === displayId);
+
+      if (display) {
+        captureScreenshot(display, {
+          x: left,
+          y: top,
+          width: right - left,
+          height: bottom - top,
+        });
+      }
+    });
+
+    return cleanup;
+  }, [bottom, left, right, top]);
+
+  useEffect(() => {
     sendOverlayReady();
   });
-
-  const { bottom, left, right, top } = viewFinderBounds;
 
   return (
     <Container ref={containerRef}>

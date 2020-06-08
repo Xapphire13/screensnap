@@ -10,9 +10,14 @@ import {
 import { desktopCapturer, remote, MenuItem as MenuItemType } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
 import ToolbarButton from './ToolbarButton';
-import { sendShowOverlay } from '../utils/IpcRendererUtils';
+import {
+  sendShowOverlay,
+  sendGetOverlayWindowInfo,
+  sendCaptureScreenshot,
+} from '../utils/IpcRendererUtils';
+import captureScreenshot from '../utils/captureScreenshot';
 
-const { Menu, MenuItem, shell } = remote;
+const { Menu, MenuItem, shell, BrowserWindow } = remote;
 
 const Container = styled.div`
   -webkit-app-region: drag;
@@ -73,6 +78,16 @@ function showApplicationMenu(element: HTMLDivElement) {
   );
 }
 
+async function takeScreenshot() {
+  const windows = BrowserWindow.getAllWindows();
+  const [screenId, overlayWindowId] = await sendGetOverlayWindowInfo();
+  const overlayWindow = windows.find((window) => window.id === overlayWindowId);
+
+  if (overlayWindow) {
+    sendCaptureScreenshot(overlayWindow, screenId);
+  }
+}
+
 export default function Toolbar() {
   return (
     <Container>
@@ -81,7 +96,7 @@ export default function Toolbar() {
         icon={Crosshair}
         onClick={(event) => showCaptureSources(event.currentTarget)}
       />
-      <ToolbarButton icon={Aperture} size="large" />
+      <ToolbarButton icon={Aperture} size="large" onClick={takeScreenshot} />
       <ToolbarButton
         icon={Maximize}
         onClick={() => {

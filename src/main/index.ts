@@ -99,6 +99,12 @@ ipcMain.on(IpcChannel.ShowOverlay, async (_, options: ShowOverlayOptions) => {
   overlay.webContents.send(IpcChannel.SetViewFinderSize, newBounds);
 });
 
+ipcMain.handle(IpcChannel.GetOverlayWindowInfo, () => {
+  const [displayId, window] = [...overlays.entries()][0];
+
+  return [displayId, window.id];
+});
+
 async function checkScreenRecordingPermissions() {
   const access = systemPreferences.getMediaAccessStatus('screen');
 

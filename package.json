@@ -50,6 +50,7 @@
   "dependencies": {
     "@babel/runtime": "^7.10.2",
     "electron": "^9.0.2",
+    "electron-screencapture": "^1.1.0",
     "linaria": "^1.3.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
