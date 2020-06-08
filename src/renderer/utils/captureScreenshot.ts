@@ -1,4 +1,4 @@
-import { desktopCapturer, remote } from 'electron';
+import { desktopCapturer } from 'electron';
 import fs from 'fs';
 import { promisify } from 'util';
 
