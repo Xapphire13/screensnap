@@ -126,7 +126,7 @@ export default function Overlay() {
           y: top,
           width: right - left,
           height: bottom - top,
-        });
+        }).then(console.log); // TODO, remove log
       }
     });
 

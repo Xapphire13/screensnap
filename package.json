@@ -24,6 +24,7 @@
     "@babel/preset-typescript": "^7.10.1",
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@types/tmp": "^0.2.0",
     "@typescript-eslint/eslint-plugin": "^3.1.0",
     "@typescript-eslint/parser": "^3.1.0",
     "babel-loader": "^8.1.0",
@@ -52,6 +53,7 @@
     "linaria": "^1.3.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-feather": "^2.0.8"
+    "react-feather": "^2.0.8",
+    "tmp": "^0.2.1"
   }
 }

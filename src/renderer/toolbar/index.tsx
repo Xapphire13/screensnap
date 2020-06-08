@@ -15,7 +15,6 @@ import {
   sendGetOverlayWindowInfo,
   sendCaptureScreenshot,
 } from '../utils/IpcRendererUtils';
-import captureScreenshot from '../utils/captureScreenshot';
 
 const { Menu, MenuItem, shell, BrowserWindow } = remote;
 
