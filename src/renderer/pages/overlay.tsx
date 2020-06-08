@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { styled } from 'linaria/react';
 import { remote } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
-import ViewFinder from './ViewFinder';
+import ViewFinder from '../components/ViewFinder';
 import { BoundingRectangle } from '../../BoundingRectangle';
 import {
   sendOverlayReady,

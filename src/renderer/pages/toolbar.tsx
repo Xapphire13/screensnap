@@ -9,7 +9,7 @@ import {
 } from 'react-feather';
 import { desktopCapturer, remote, MenuItem as MenuItemType } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
-import ToolbarButton from './ToolbarButton';
+import ToolbarButton from '../components/ToolbarButton';
 import {
   sendShowOverlay,
   sendGetOverlayWindowInfo,

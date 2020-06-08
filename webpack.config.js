@@ -16,8 +16,8 @@ const baseConfig = {
 
 const clientConfig = merge(baseConfig, {
   entry: {
-    "toolbar": "./src/renderer/toolbar/index.tsx",
-    "overlay": "./src/renderer/overlay/index.tsx"
+    "toolbar": "./src/renderer/pages/toolbar.tsx",
+    "overlay": "./src/renderer/pages/overlay.tsx"
   },
   target: 'electron-renderer',
   output: {
