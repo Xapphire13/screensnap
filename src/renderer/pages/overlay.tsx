@@ -15,6 +15,7 @@ import {
   onSetViewFinderSize,
   onCaptureScreenshot,
   onDisplayInfo,
+  sendShowViewer,
 } from '../utils/IpcRendererUtils';
 import captureScreenshot from '../utils/captureScreenshot';
 
@@ -151,13 +152,14 @@ export default function Overlay() {
           .find((it) => it.id === displayId);
 
         if (display) {
-          await captureScreenshot(display, {
+          const filePath = await captureScreenshot(display, {
             x: left,
             y: top,
             width: right - left,
             height: bottom - top,
           });
 
+          sendShowViewer(filePath);
           getCurrentWindow().close();
         }
       }

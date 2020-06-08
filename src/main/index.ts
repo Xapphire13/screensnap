@@ -9,11 +9,12 @@ import {
 import IpcChannel, { ShowOverlayOptions } from '../IpcChannel';
 
 const overlays = new Map<number, BrowserWindow>();
+let toolbarWindow: BrowserWindow;
 
 function createToolbarWindow() {
   const { x, y } = screen.getCursorScreenPoint();
 
-  const toolbarWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     x,
     y,
     width: 500,
@@ -26,10 +27,12 @@ function createToolbarWindow() {
     },
   });
 
-  toolbarWindow.setAlwaysOnTop(true, 'screen-saver', 2);
-  toolbarWindow.loadFile('toolbar.html');
+  window.setAlwaysOnTop(true, 'screen-saver', 2);
+  window.loadFile('toolbar.html');
 
-  toolbarWindow.show();
+  window.show();
+
+  return window;
 }
 
 async function createOverlayWindow(): Promise<BrowserWindow> {
@@ -66,6 +69,10 @@ async function createOverlayWindow(): Promise<BrowserWindow> {
     },
   });
 
+  overlayWindow.on('close', () => {
+    overlays.delete(cursorScreen.id);
+  });
+
   overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
   overlayWindow.loadFile('overlay.html');
 
@@ -80,6 +87,28 @@ async function createOverlayWindow(): Promise<BrowserWindow> {
   overlayWindow.webContents.send(IpcChannel.DisplayInfo, cursorScreen.id);
 
   return overlayWindow;
+}
+
+async function createViewerWindow() {
+  const viewerWindow = new BrowserWindow({
+    width: 600,
+    height: 400,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
+
+  viewerWindow.on('close', () => {
+    toolbarWindow = createToolbarWindow();
+  });
+
+  viewerWindow.loadFile('./viewer.html');
+
+  await new Promise((res) => {
+    ipcMain.once(IpcChannel.ViewerReady, () => res());
+  });
+
+  return viewerWindow;
 }
 
 ipcMain.handle(
@@ -108,7 +137,14 @@ ipcMain.handle(
   }
 );
 
-async function checkScreenRecordingPermissions() {
+ipcMain.on(IpcChannel.ShowViewer, async (_, filePath: string) => {
+  const viewerWindow = await createViewerWindow();
+
+  toolbarWindow.webContents.send(IpcChannel.CloseWindow);
+  viewerWindow.webContents.send(IpcChannel.FilePath, filePath);
+});
+
+async function ensureScreenRecordingPermissions() {
   const access = systemPreferences.getMediaAccessStatus('screen');
 
   if (access !== 'granted') {
@@ -120,9 +156,11 @@ async function checkScreenRecordingPermissions() {
 }
 
 async function main() {
-  await checkScreenRecordingPermissions();
+  await ensureScreenRecordingPermissions();
 
-  app.on('ready', createToolbarWindow);
+  await new Promise((resolve) => app.on('ready', resolve));
+
+  toolbarWindow = createToolbarWindow();
 }
 
 main();

@@ -6,10 +6,18 @@ export function sendOverlayReady() {
   ipcRenderer.send(IpcChannel.OverlayReady);
 }
 
+export function sendViewerReady() {
+  ipcRenderer.send(IpcChannel.ViewerReady);
+}
+
 export function sendShowOverlay(
   options: ShowOverlayOptions = {}
 ): Promise<number> {
   return ipcRenderer.invoke(IpcChannel.ShowOverlay, options);
+}
+
+export function sendShowViewer(filePath: string) {
+  ipcRenderer.send(IpcChannel.ShowViewer, filePath);
 }
 
 export function sendCaptureScreenshot(overlayWindow: BrowserWindow) {
@@ -41,3 +49,9 @@ export const onCaptureScreenshot = createChannelListener(
 export const onDisplayInfo = createChannelListener<(displayId: number) => void>(
   IpcChannel.DisplayInfo
 );
+
+export const onFilePath = createChannelListener<(path: string) => void>(
+  IpcChannel.FilePath
+);
+
+export const onCloseWindow = createChannelListener(IpcChannel.CloseWindow);

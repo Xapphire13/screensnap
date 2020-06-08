@@ -17,7 +17,8 @@ const baseConfig = {
 const clientConfig = merge(baseConfig, {
   entry: {
     "toolbar": "./src/renderer/pages/toolbar.tsx",
-    "overlay": "./src/renderer/pages/overlay.tsx"
+    "overlay": "./src/renderer/pages/overlay.tsx",
+    "viewer": "./src/renderer/pages/viewer.tsx",
   },
   target: 'electron-renderer',
   output: {
@@ -63,8 +64,9 @@ const clientConfig = merge(baseConfig, {
     new MiniCssExtractPlugin({
       filename: '[name].css',
     }),
-    new HtmlWebpackPlugin({ chunks: ["toolbar"], filename: "toolbar.html"}),
+    new HtmlWebpackPlugin({ chunks: ["toolbar"], filename: "toolbar.html" }),
     new HtmlWebpackPlugin({ chunks: ["overlay"], filename: "overlay.html" }),
+    new HtmlWebpackPlugin({ chunks: ["viewer"], filename: "viewer.html" }),
   ]
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from 'linaria/react';
 import {
   Crop,
@@ -13,9 +13,10 @@ import ToolbarButton from '../components/ToolbarButton';
 import {
   sendShowOverlay,
   sendCaptureScreenshot,
+  onCloseWindow,
 } from '../utils/IpcRendererUtils';
 
-const { Menu, MenuItem, shell, BrowserWindow } = remote;
+const { Menu, MenuItem, shell, BrowserWindow, getCurrentWindow } = remote;
 
 const Container = styled.div`
   -webkit-app-region: drag;
@@ -87,6 +88,12 @@ async function takeScreenshot(overlayWindowId: number) {
 
 export default function Toolbar() {
   const [overlayWindowId, setOverlayWindowId] = useState<number>();
+
+  useEffect(() => {
+    const cleanup = onCloseWindow(() => getCurrentWindow().close());
+
+    return cleanup;
+  }, []);
 
   return (
     <Container>

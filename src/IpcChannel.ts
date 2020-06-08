@@ -4,6 +4,10 @@ enum IpcChannel {
   OverlayReady = 'overlay-ready',
   CaptureScreenshot = 'capture-screenshot',
   DisplayInfo = 'display-info',
+  FilePath = 'file-path',
+  ShowViewer = 'show-viewer',
+  ViewerReady = 'viewer-ready',
+  CloseWindow = 'close-window',
 }
 
 export interface ShowOverlayOptions {
