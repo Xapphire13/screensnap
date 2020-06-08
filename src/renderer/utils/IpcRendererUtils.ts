@@ -1,4 +1,4 @@
-import { ipcRenderer, remote, BrowserView, BrowserWindow } from 'electron';
+import { ipcRenderer, BrowserWindow } from 'electron';
 import IpcChannel, { ShowOverlayOptions } from '../../IpcChannel';
 import { BoundingRectangle } from '../../BoundingRectangle';
 
@@ -6,19 +6,14 @@ export function sendOverlayReady() {
   ipcRenderer.send(IpcChannel.OverlayReady);
 }
 
-export function sendShowOverlay(options: ShowOverlayOptions = {}) {
-  ipcRenderer.send(IpcChannel.ShowOverlay, options);
+export function sendShowOverlay(
+  options: ShowOverlayOptions = {}
+): Promise<number> {
+  return ipcRenderer.invoke(IpcChannel.ShowOverlay, options);
 }
 
-export function sendGetOverlayWindowInfo(): Promise<[number, number]> {
-  return ipcRenderer.invoke(IpcChannel.GetOverlayWindowInfo);
-}
-
-export function sendCaptureScreenshot(
-  overlayWindow: BrowserWindow,
-  screenId: number
-) {
-  overlayWindow.webContents.send(IpcChannel.CaptureScreenshot, screenId);
+export function sendCaptureScreenshot(overlayWindow: BrowserWindow) {
+  overlayWindow.webContents.send(IpcChannel.CaptureScreenshot);
 }
 
 function createChannelListener<T extends (...args: any) => void>(
@@ -39,6 +34,10 @@ export const onSetViewFinderSize = createChannelListener<
   (newBounds: BoundingRectangle) => void
 >(IpcChannel.SetViewFinderSize);
 
-export const onCaptureScreenshot = createChannelListener<
-  (displayId: number) => void
->(IpcChannel.CaptureScreenshot);
+export const onCaptureScreenshot = createChannelListener(
+  IpcChannel.CaptureScreenshot
+);
+
+export const onDisplayInfo = createChannelListener<(displayId: number) => void>(
+  IpcChannel.DisplayInfo
+);

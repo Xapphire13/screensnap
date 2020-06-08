@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from 'react';
 import { styled } from 'linaria/react';
 import { remote } from 'electron';
 import bootstrapWindow from '../bootstrapWindow';
@@ -8,6 +14,7 @@ import {
   sendOverlayReady,
   onSetViewFinderSize,
   onCaptureScreenshot,
+  onDisplayInfo,
 } from '../utils/IpcRendererUtils';
 import captureScreenshot from '../utils/captureScreenshot';
 
@@ -36,6 +43,8 @@ const OverlayMask = styled.div<{
 export default function Overlay() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [{ height, width }, setOverlaySize] = useState({ width: 0, height: 0 });
+  const [displayId, setDisplayId] = useState<number>();
+  const [takeScreenshot, setTakeScreenshot] = useState(false);
   const [viewFinderBounds, setViewFinderBounds] = useState({
     top: 0,
     bottom: 0,
@@ -117,7 +126,25 @@ export default function Overlay() {
   }, []);
 
   useEffect(() => {
-    const cleanup = onCaptureScreenshot((displayId) => {
+    const cleanup = onCaptureScreenshot(() => {
+      setTakeScreenshot(true);
+    });
+
+    return cleanup;
+  }, [bottom, left, right, top]);
+
+  useEffect(() => {
+    const cleanup = onDisplayInfo(setDisplayId);
+
+    return cleanup;
+  }, []);
+
+  useEffect(() => {
+    sendOverlayReady();
+  });
+
+  useLayoutEffect(() => {
+    if (takeScreenshot) {
       const display = screen.getAllDisplays().find((it) => it.id === displayId);
 
       if (display) {
@@ -128,14 +155,8 @@ export default function Overlay() {
           height: bottom - top,
         }).then(console.log); // TODO, remove log
       }
-    });
-
-    return cleanup;
-  }, [bottom, left, right, top]);
-
-  useEffect(() => {
-    sendOverlayReady();
-  });
+    }
+  }, [bottom, displayId, left, right, takeScreenshot, top]);
 
   return (
     <Container ref={containerRef}>

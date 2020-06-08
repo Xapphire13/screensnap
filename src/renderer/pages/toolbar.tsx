@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { styled } from 'linaria/react';
 import {
   Crop,
@@ -12,7 +12,6 @@ import bootstrapWindow from '../bootstrapWindow';
 import ToolbarButton from '../components/ToolbarButton';
 import {
   sendShowOverlay,
-  sendGetOverlayWindowInfo,
   sendCaptureScreenshot,
 } from '../utils/IpcRendererUtils';
 
@@ -77,29 +76,41 @@ function showApplicationMenu(element: HTMLDivElement) {
   );
 }
 
-async function takeScreenshot() {
+async function takeScreenshot(overlayWindowId: number) {
   const windows = BrowserWindow.getAllWindows();
-  const [screenId, overlayWindowId] = await sendGetOverlayWindowInfo();
   const overlayWindow = windows.find((window) => window.id === overlayWindowId);
 
   if (overlayWindow) {
-    sendCaptureScreenshot(overlayWindow, screenId);
+    sendCaptureScreenshot(overlayWindow);
   }
 }
 
 export default function Toolbar() {
+  const [overlayWindowId, setOverlayWindowId] = useState<number>();
+
   return (
     <Container>
-      <ToolbarButton icon={Crop} onClick={() => sendShowOverlay()} />
+      <ToolbarButton
+        icon={Crop}
+        onClick={async () => {
+          const windowId = await sendShowOverlay();
+          setOverlayWindowId(windowId);
+        }}
+      />
       <ToolbarButton
         icon={Crosshair}
         onClick={(event) => showCaptureSources(event.currentTarget)}
       />
-      <ToolbarButton icon={Aperture} size="large" onClick={takeScreenshot} />
+      <ToolbarButton
+        icon={Aperture}
+        size="large"
+        onClick={() => overlayWindowId && takeScreenshot(overlayWindowId)}
+      />
       <ToolbarButton
         icon={Maximize}
-        onClick={() => {
-          sendShowOverlay({ fullscreen: true });
+        onClick={async () => {
+          const windowId = await sendShowOverlay({ fullscreen: true });
+          setOverlayWindowId(windowId);
         }}
       />
       <ToolbarButton

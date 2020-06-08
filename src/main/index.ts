@@ -32,7 +32,7 @@ function createToolbarWindow() {
   toolbarWindow.show();
 }
 
-function createOverlayWindow(): Promise<BrowserWindow> {
+async function createOverlayWindow(): Promise<BrowserWindow> {
   const cursorScreen = screen.getDisplayNearestPoint(
     screen.getCursorScreenPoint()
   );
@@ -73,37 +73,40 @@ function createOverlayWindow(): Promise<BrowserWindow> {
 
   overlays.set(cursorScreen.id, overlayWindow);
 
-  return new Promise((res) => {
-    ipcMain.once(IpcChannel.OverlayReady, () => res(overlayWindow));
+  await new Promise((res) => {
+    ipcMain.once(IpcChannel.OverlayReady, () => res());
   });
+
+  overlayWindow.webContents.send(IpcChannel.DisplayInfo, cursorScreen.id);
+
+  return overlayWindow;
 }
 
-ipcMain.on(IpcChannel.ShowOverlay, async (_, options: ShowOverlayOptions) => {
-  const overlay = await createOverlayWindow();
-  const { height, width } = overlay.getBounds();
+ipcMain.handle(
+  IpcChannel.ShowOverlay,
+  async (_, options: ShowOverlayOptions) => {
+    const overlay = await createOverlayWindow();
+    const { height, width } = overlay.getBounds();
 
-  const newBounds = options.fullscreen
-    ? {
-        top: 0,
-        bottom: height,
-        left: 0,
-        right: width,
-      }
-    : options.bounds ?? {
-        top: height / 2 - 50,
-        bottom: height / 2 + 50,
-        left: width / 2 - 100,
-        right: width / 2 + 100,
-      };
+    const newBounds = options.fullscreen
+      ? {
+          top: 0,
+          bottom: height,
+          left: 0,
+          right: width,
+        }
+      : options.bounds ?? {
+          top: height / 2 - 50,
+          bottom: height / 2 + 50,
+          left: width / 2 - 100,
+          right: width / 2 + 100,
+        };
 
-  overlay.webContents.send(IpcChannel.SetViewFinderSize, newBounds);
-});
+    overlay.webContents.send(IpcChannel.SetViewFinderSize, newBounds);
 
-ipcMain.handle(IpcChannel.GetOverlayWindowInfo, () => {
-  const [displayId, window] = [...overlays.entries()][0];
-
-  return [displayId, window.id];
-});
+    return overlay.id;
+  }
+);
 
 async function checkScreenRecordingPermissions() {
   const access = systemPreferences.getMediaAccessStatus('screen');
