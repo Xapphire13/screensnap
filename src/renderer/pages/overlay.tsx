@@ -18,7 +18,7 @@ import {
 } from '../utils/IpcRendererUtils';
 import captureScreenshot from '../utils/captureScreenshot';
 
-const { screen } = remote;
+const { screen, getCurrentWindow } = remote;
 
 const Container = styled.div`
   position: relative;
@@ -144,38 +144,55 @@ export default function Overlay() {
   });
 
   useLayoutEffect(() => {
-    if (takeScreenshot) {
-      const display = screen.getAllDisplays().find((it) => it.id === displayId);
+    const handleTakeScreenshot = async () => {
+      if (takeScreenshot) {
+        const display = screen
+          .getAllDisplays()
+          .find((it) => it.id === displayId);
 
-      if (display) {
-        captureScreenshot(display, {
-          x: left,
-          y: top,
-          width: right - left,
-          height: bottom - top,
-        }).then(console.log); // TODO, remove log
+        if (display) {
+          await captureScreenshot(display, {
+            x: left,
+            y: top,
+            width: right - left,
+            height: bottom - top,
+          });
+
+          getCurrentWindow().close();
+        }
       }
-    }
+    };
+
+    handleTakeScreenshot();
   }, [bottom, displayId, left, right, takeScreenshot, top]);
 
   return (
     <Container ref={containerRef}>
-      <OverlayMask top={0} bottom={height - top} left={0} right={0} />
-      <OverlayMask top={bottom} bottom={0} left={0} right={0} />
-      <OverlayMask
-        top={top}
-        bottom={height - bottom}
-        left={0}
-        right={width - left}
-      />
-      <OverlayMask top={top} bottom={height - bottom} left={right} right={0} />
-      <ViewFinder
-        onResize={handleViewFinderResize}
-        top={top}
-        left={left}
-        width={right - left}
-        height={bottom - top}
-      />
+      {!takeScreenshot && (
+        <>
+          <OverlayMask top={0} bottom={height - top} left={0} right={0} />
+          <OverlayMask top={bottom} bottom={0} left={0} right={0} />
+          <OverlayMask
+            top={top}
+            bottom={height - bottom}
+            left={0}
+            right={width - left}
+          />
+          <OverlayMask
+            top={top}
+            bottom={height - bottom}
+            left={right}
+            right={0}
+          />
+          <ViewFinder
+            onResize={handleViewFinderResize}
+            top={top}
+            left={left}
+            width={right - left}
+            height={bottom - top}
+          />
+        </>
+      )}
     </Container>
   );
 }
